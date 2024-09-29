@@ -1,1 +1,2 @@
 # Directory_checker
+This is a directory checker written entirely in go. When you run the program it scans the given directory and makes a comparison file. The next time you run the program if there are no changes it should be written in the terminal but if there are changes or new files it will tell you.

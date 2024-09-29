@@ -11,14 +11,24 @@ import (
 
 func main() {
 	directoryName := "test"
-	content, fileNames := fileOperations(directoryName)
+	content, fileNames, errors := fileOperations(directoryName)
+	foundErrors := false
+	for _, err := range errors {
+		if err != nil {
+			fmt.Println(err)
+			foundErrors = true
+		}
+	}
+	if !foundErrors {
+		fmt.Println("No changes are made to the directory.")
+	}
 	fmt.Printf("Contents: %v\nFilenames: %v", content, fileNames)
 	for i, name := range fileNames {
 		updateFile(content[i], name, i)
 	}
 }
 
-func fileOperations(directoryName string) ([]string, []string) {
+func fileOperations(directoryName string) ([]string, []string, []error) {
 	entries, err := os.ReadDir(directoryName)
 	if err != nil {
 		log.Fatal("Error reading directory:", err)
@@ -34,6 +44,7 @@ func fileOperations(directoryName string) ([]string, []string) {
 
 	var fileNames []string
 	var fileContents []string
+	var errors []error
 
 	for i, fileName := range entries {
 		if !fileName.IsDir() {
@@ -46,18 +57,17 @@ func fileOperations(directoryName string) ([]string, []string) {
 				log.Fatal("Error with reading the file", err)
 			}
 			content, err := compareContentsOfFiles(entries[i].Name(), directoryName)
-			if err != nil {
-				fmt.Println(err)
-			}
 			fileNames = append(fileNames, fileName.Name())
 			fileContents = append(fileContents, string(content))
+			errors = append(errors, err)
 		} else {
-			subDirContents, subDirFileNames := fileOperations("./" + directoryName + "/" + fileName.Name() + "/")
+			subDirContents, subDirFileNames, subDirErrors := fileOperations("./" + directoryName + "/" + fileName.Name() + "/")
 			fileContents = append(fileContents, subDirContents...)
 			fileNames = append(fileNames, subDirFileNames...)
+			errors = append(errors, subDirErrors...)
 		}
 	}
-	return fileContents, fileNames
+	return fileContents, fileNames, errors
 }
 
 func compareContentsOfFiles(fileName string, directoryName string) ([]byte, error) {
