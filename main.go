@@ -14,8 +14,7 @@ func main() {
 	content, fileNames := fileOperations(directoryName)
 	fmt.Printf("Contents: %v\nFilenames: %v", content, fileNames)
 	for i, name := range fileNames {
-		var contentPart []byte = []byte(content[i])
-		updateFile(contentPart, name, i)
+		updateFile(content[i], name, i)
 	}
 }
 
@@ -105,26 +104,23 @@ func compareContentsOfFiles(fileName string, directoryName string) ([]byte, erro
 		return content, errors.New(errorMessage)
 	}
 
-	fmt.Println(content)
-
 	return content, nil
 }
 
-func updateFile(content []byte, fileName string, append int) {
+func updateFile(content string, fileName string, append int) {
 	if append > 0 {
 		file, err := os.OpenFile("comparisonFile.txt", os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
-
-		file.WriteString(fileName + ":\n" + string(content) + "\n")
+		file.WriteString(fileName + ":\n" + content + "\n")
 	} else {
 		file, err := os.OpenFile("comparisonFile.txt", os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
-		file.WriteString(fileName + ":\n" + string(content) + "\n")
+		file.WriteString(fileName + ":\n" + content + "\n")
 	}
 }
